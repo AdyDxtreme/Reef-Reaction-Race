@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pH Battle Cards - Game Edukasi Kimia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .game-header {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-title {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 1rem;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 15px;
+            min-width: 100px;
+        }
+
+        .game-board {
+            flex: 1;
+            display: grid;
+            grid-template-rows: 1fr auto 1fr;
+            gap: 1rem;
+            padding: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .opponent-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 120px;
+        }
+
+        .card-back {
+            width: 80px;
+            height: 120px;
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            border-radius: 10px;
+            margin: 0 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            border: 2px solid #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .play-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .deck {
+            width: 100px;
+            height: 150px;
+            background: linear-gradient(45deg, #8e44ad, #9b59b6);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid #fff;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .deck:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .discard-pile {
+            width: 100px;
+            height: 150px;
+            border: 3px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .player-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 150px;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .card {
+            width: 80px;
+            height: 120px;
+            border-radius: 10px;
+            padding: 8px;
+            color: white;
+            font-size: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.05);
+            z-index: 10;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .card.playable {
+            box-shadow: 0 0 15px #ffeb3b;
+            border-color: #ffeb3b;
+        }
+
+        .card .formula {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .card .ph-value {
+            font-size: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 4px;
+            border-radius: 5px;
+        }
+
+        .card .card-type {
+            font-size: 8px;
+            opacity: 0.8;
+        }
+
+        /* Warna kartu berdasarkan jenis */
+        .card.asam-kuat {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .card.asam-lemah {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .card.basa-kuat {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+
+        .card.basa-lemah {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        .card.buffer {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+
+        .card.indikator {
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { box-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(241, 196, 15, 0.8); }
+        }
+
+        .turn-indicator {
+            position: fixed;
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 100;
+        }
+
+        .quiz-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .quiz-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: center;
+        }
+
+        .quiz-question {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .quiz-option {
+            padding: 0.8rem;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quiz-option:hover {
+            background: #e9ecef;
+            border-color: #007bff;
+        }
+
+        .quiz-option.selected {
+            background: #007bff;
+            color: white;
+            border-color: #0056b3;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .game-over-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .game-over-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .winner-text {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #28a745;
+        }
+
+        .loser-text {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #dc3545;
+        }
+
+        @media (max-width: 768px) {
+            .game-title {
+                font-size: 1.5rem;
+            }
+            
+            .game-info {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .card {
+                width: 70px;
+                height: 105px;
+                font-size: 9px;
+            }
+            
+            .play-area {
+                gap: 1rem;
+            }
+            
+            .deck, .discard-pile {
+                width: 80px;
+                height: 120px;
+            }
+            
+            .turn-indicator {
+                position: relative;
+                left: auto;
+                top: auto;
+                transform: none;
+                margin: 1rem 0;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: #dc3545;
+        }
+
+        .card-animation {
+            animation: cardPlay 0.5s ease;
+        }
+
+        @keyframes cardPlay {
+            0% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-20px) scale(1.1); }
+            100% { transform: translateY(0) scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-header">
+        <h1 class="game-title">pH Battle Cards</h1>
+        <div class="game-info">
+            <div class="info-item">
+                <div>Kartu Pemain</div>
+                <div id="player-cards-count">7</div>
+            </div>
+            <div class="info-item">
+                <div>Kartu Lawan</div>
+                <div id="ai-cards-count">7</div>
+            </div>
+            <div class="info-item">
+                <div>Skor</div>
+                <div id="score">0</div>
+            </div>
+            <div class="info-item">
+                <div>Giliran</div>
+                <div id="turn-display">Pemain</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-board">
+        <div class="opponent-area" id="opponent-area">
+            <!-- Kartu lawan akan ditampilkan di sini -->
+        </div>
+
+        <div class="play-area">
+            <div class="deck" id="deck" onclick="drawCard()">
+                <div>AMBIL<br>KARTU</div>
+            </div>
+            <div class="discard-pile" id="discard-pile">
+                <!-- Kartu yang dimainkan akan muncul di sini -->
+            </div>
+        </div>
+
+        <div class="player-area" id="player-area">
+            <!-- Kartu pemain akan ditampilkan di sini -->
+        </div>
+    </div>
+
+    <!-- Modal Quiz -->
+    <div class="quiz-modal" id="quiz-modal">
+        <div class="quiz-content">
+            <h3>Pertanyaan pH</h3>
+            <div class="quiz-question" id="quiz-question"></div>
+            <div class="quiz-options" id="quiz-options"></div>
+            <div class="controls">
+                <button class="btn" id="submit-answer" onclick="submitAnswer()">Jawab</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Game Over -->
+    <div class="game-over-modal" id="game-over-modal">
+        <div class="game-over-content">
+            <div id="game-result"></div>
+            <div class="controls">
+                <button class="btn" onclick="newGame()">Main Lagi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Definisi kartu
+        const cardTypes = {
+            'asam-kuat': {
+                name: 'Asam Kuat',
+                color: 'asam-kuat',
+                cards: [
+                    { formula: 'HCl', name: 'Asam Klorida', ph: '0-1', description: 'Asam kuat yang terionisasi sempurna' },
+                    { formula: 'H₂SO₄', name: 'Asam Sulfat', ph: '0-1', description: 'Asam kuat diprotik' },
+                    { formula: 'HNO₃', name: 'Asam Nitrat', ph: '0-2', description: 'Asam kuat dan oksidator kuat' },
+                    { formula: 'HBr', name: 'Asam Bromida', ph: '0-1', description: 'Asam halida yang sangat kuat' }
+                ]
+            },
+            'asam-lemah': {
+                name: 'Asam Lemah',
+                color: 'asam-lemah',
+                cards: [
+                    { formula: 'CH₃COOH', name: 'Asam Asetat', ph: '3-5', description: 'Asam lemah dalam cuka' },
+                    { formula: 'H₂CO₃', name: 'Asam Karbonat', ph: '4-6', description: 'Asam lemah dalam air soda' },
+                    { formula: 'HF', name: 'Asam Fluorida', ph: '3-4', description: 'Asam lemah namun sangat korosif' }
+                ]
+            },
+            'basa-kuat': {
+                name: 'Basa Kuat',
+                color: 'basa-kuat',
+                cards: [
+                    { formula: 'NaOH', name: 'Natrium Hidroksida', ph: '13-14', description: 'Basa kuat atau soda kaustik' },
+                    { formula: 'KOH', name: 'Kalium Hidroksida', ph: '13-14', description: 'Basa kuat higrokopis' },
+                    { formula: 'Ba(OH)₂', name: 'Barium Hidroksida', ph: '12-13', description: 'Basa kuat dalam air kapur' }
+                ]
+            },
+            'basa-lemah': {
+                name: 'Basa Lemah',
+                color: 'basa-lemah',
+                cards: [
+                    { formula: 'NH₃', name: 'Amonia', ph: '9-11', description: 'Basa lemah dalam rumah tangga' },
+                    { formula: 'Al(OH)₃', name: 'Aluminium Hidroksida', ph: '8-10', description: 'Basa lemah dalam antasida' }
+                ]
+            },
+            'buffer': {
+                name: 'Buffer',
+                color: 'buffer',
+                cards: [
+                    { formula: 'CH₃COOH/CH₃COONa', name: 'Buffer Asetat', ph: '~7', description: 'Sistem penyangga asam lemah' },
+                    { formula: 'NH₃/NH₄Cl', name: 'Buffer Amonia', ph: '~7', description: 'Sistem penyangga basa lemah' }
+                ]
+            },
+            'indikator': {
+                name: 'Indikator',
+                color: 'indikator',
+                cards: [
+                    { formula: 'Lakmus', name: 'Kertas Lakmus', ph: 'Deteksi', description: 'Indikator universal asam-basa' },
+                    { formula: 'Fenolftalein', name: 'Fenolftalein', ph: 'pH 8.2-10', description: 'Indikator tidak berwarna→merah muda' },
+                    { formula: 'Metil Orange', name: 'Metil Orange', ph: 'pH 3.1-4.4', description: 'Indikator merah→kuning' }
+                ]
+            }
+        };
+
+        // Bank soal
+        const questionBank = [
+            {
+                question: "Apa pH larutan HCl 0.1 M?",
+                options: ["1", "2", "7", "14"],
+                correct: 0,
+                explanation: "HCl adalah asam kuat, pH = -log[H+] = -log(0.1) = 1"
+            },
+            {
+                question: "Manakah yang termasuk asam lemah?",
+                options: ["HCl", "H₂SO₄", "CH₃COOH", "HNO₃"],
+                correct: 2,
+                explanation: "CH₃COOH (asam asetat) adalah asam lemah yang tidak terionisasi sempurna"
+            },
+            {
+                question: "Apa fungsi larutan buffer?",
+                options: ["Mengubah pH drastis", "Mempertahankan pH", "Meningkatkan pH", "Menurunkan pH"],
+                correct: 1,
+                explanation: "Larutan buffer mempertahankan pH relatif stabil ketika ditambah sedikit asam atau basa"
+            },
+            {
+                question: "Warna fenolftalein dalam larutan basa adalah?",
+                options: ["Tidak berwarna", "Merah muda", "Kuning", "Biru"],
+                correct: 1,
+                explanation: "Fenolftalein berwarna merah muda dalam larutan basa (pH > 8.2)"
+            },
+            {
+                question: "pH larutan netral adalah?",
+                options: ["0", "1", "7", "14"],
+                correct: 2,
+                explanation: "Air murni memiliki pH 7, yang merupakan kondisi netral"
+            },
+            {
+                question: "Manakah basa kuat?",
+                options: ["NH₃", "Al(OH)₃", "NaOH", "CH₃COOH"],
+                correct: 2,
+                explanation: "NaOH (natrium hidroksida) adalah basa kuat yang terionisasi sempurna"
+            }
+        ];
+
+        // State game
+        let gameState = {
+            playerCards: [],
+            aiCards: [],
+            discardPile: [],
+            deck: [],
+            currentPlayer: 'player', // 'player' atau 'ai'
+            score: 0,
+            gameOver: false,
+            lastPlayedCard: null
+        };
+
+        // Initialize game
+        function initGame() {
+            createDeck();
+            shuffleDeck();
+            dealCards();
+            startFirstCard();
+            updateDisplay();
+            playSound('start');
+        }
+
+        function createDeck() {
+            gameState.deck = [];
+            
+            // Buat kartu untuk setiap jenis
+            Object.keys(cardTypes).forEach(type => {
+                cardTypes[type].cards.forEach(cardData => {
+                    // Buat beberapa kartu dari setiap jenis
+                    for (let i = 0; i < 3; i++) {
+                        gameState.deck.push({
+                            ...cardData,
+                            type: type,
+                            id: `${type}-${cardData.formula}-${i}`
+                        });
+                    }
+                });
+            });
+        }
+
+        function shuffleDeck() {
+            for (let i = gameState.deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [gameState.deck[i], gameState.deck[j]] = [gameState.deck[j], gameState.deck[i]];
+            }
+        }
+
+        function dealCards() {
+            gameState.playerCards = [];
+            gameState.aiCards = [];
+            
+            // Bagikan 7 kartu ke masing-masing pemain
+            for (let i = 0; i < 7; i++) {
+                gameState.playerCards.push(gameState.deck.pop());
+                gameState.aiCards.push(gameState.deck.pop());
+            }
+        }
+
+        function startFirstCard() {
+            // Ambil kartu pertama untuk discard pile
+            let firstCard;
+            do {
+                firstCard = gameState.deck.pop();
+            } while (firstCard.type === 'indikator'); // Hindari kartu indikator sebagai kartu pertama
+            
+            gameState.discardPile.push(firstCard);
+            gameState.lastPlayedCard = firstCard;
+        }
+
+        function createCardElement(card, isPlayerCard = false) {
+            const cardEl = document.createElement('div');
+            cardEl.className = `card ${card.type}`;
+            cardEl.innerHTML = `
+                <div class="formula">${card.formula}</div>
+                <div class="ph-value">pH: ${card.ph}</div>
+                <div class="card-type">${cardTypes[card.type].name}</div>
+            `;
+
+            if (isPlayerCard) {
+                cardEl.onclick = () => playCard(card);
+                cardEl.onmouseover = (e) => showTooltip(e, card);
+                cardEl.onmouseout = hideTooltip;
+                
+                // Cek apakah kartu bisa dimainkan
+                if (canPlayCard(card)) {
+                    cardEl.classList.add('playable');
+                }
+            }
+
+            return cardEl;
+        }
+
+        function canPlayCard(card) {
+            if (!gameState.lastPlayedCard) return true;
+            if (card.type === 'indikator') return true; // Kartu indikator bisa dimainkan kapan saja
+            
+            // Cek kecocokan jenis atau pH range yang berdekatan
+            if (card.type === gameState.lastPlayedCard.type) return true;
+            
+            // Cek pH range berdekatan (implementasi sederhana)
+            return checkpHCompatibility(card, gameState.lastPlayedCard);
+        }
+
+        function checkpHCompatibility(card1, card2) {
+            const phRanges = {
+                'asam-kuat': [0, 2],
+                'asam-lemah': [3, 6],
+                'buffer': [6, 8],
+                'basa-lemah': [8, 11],
+                'basa-kuat': [12, 14]
+            };
+
+            const range1 = phRanges[card1.type];
+            const range2 = phRanges[card2.type];
+
+            if (!range1 || !range2) return false;
+
+            // Cek apakah range saling bersinggungan atau berdekatan
+            return Math.abs(range1[0] - range2[1]) <= 2 || Math.abs(range1[1] - range2[0]) <= 2;
+        }
+
+        function playCard(card) {
+            if (gameState.currentPlayer !== 'player' || gameState.gameOver) return;
+            if (!canPlayCard(card)) {
+                showNotification('Kartu tidak bisa dimainkan!', 'error');
+                return;
+            }
+
+            // Hapus kartu dari tangan pemain
+            const cardIndex = gameState.playerCards.findIndex(c => c.id === card.id);
+            gameState.playerCards.splice(cardIndex, 1);
+
+            // Pindahkan ke discard pile
+            gameState.discardPile.push(card);
+            gameState.lastPlayedCard = card;
+
+            // Animasi kartu
+            const cardElements = document.querySelectorAll('.card');
+            cardElements.forEach(el => {
+                if (el.innerHTML.includes(card.formula)) {
+                    el.classList.add('card-animation');
+                }
+            });
+
+            playSound('play');
+
+            // Cek kartu indikator
+            if (card.type === 'indikator') {
+                setTimeout(() => {
+                    showQuiz();
+                }, 500);
+            } else {
+                // Cek kemenangan
+                if (gameState.playerCards.length === 0) {
+                    endGame('player');
+                    return;
+                }
+
+                // Ganti giliran
+                gameState.currentPlayer = 'ai';
+                setTimeout(() => {
+                    aiTurn();
+                }, 1000);
+            }
+
+            updateDisplay();
+        }
+
+        function drawCard() {
+            if (gameState.currentPlayer !== 'player' || gameState.gameOver) return;
+            if (gameState.deck.length === 0) {
+                reshuffleDeck();
+            }
+
+            const newCard = gameState.deck.pop();
+            gameState.playerCards.push(newCard);
+            gameState.currentPlayer = 'ai';
+            
+            playSound('draw');
+            showNotification('Anda mengambil 1 kartu');
+            
+            setTimeout(() => {
+                aiTurn();
+            }, 1000);
+            
+            updateDisplay();
+        }
+
+        function aiTurn() {
+            if (gameState.currentPlayer !== 'ai' || gameState.gameOver) return;
+
+            // AI mencari kartu yang bisa dimainkan
+            const playableCards = gameState.aiCards.filter(card => canPlayCard(card));
+
+            if (playableCards.length > 0) {
+                // Pilih kartu secara random dari yang bisa dimainkan
+                const cardToPlay = playableCards[Math.floor(Math.random() * playableCards.length)];
+                
+                // Hapus kartu dari tangan AI
+                const cardIndex = gameState.aiCards.findIndex(c => c.id === cardToPlay.id);
+                gameState.aiCards.splice(cardIndex, 1);
+
+                // Pindahkan ke discard pile
+                gameState.discardPile.push(cardToPlay);
+                gameState.lastPlayedCard = cardToPlay;
+
+                playSound('play');
+                showNotification(`Lawan memainkan ${cardToPlay.formula}`);
+
+                // Cek kemenangan AI
+                if (gameState.aiCards.length === 0) {
+                    endGame('ai');
+                    return;
+                }
+
+                // Cek kartu indikator
+                if (cardToPlay.type === 'indikator') {
+                    setTimeout(() => {
+                        // AI langsung dapat efek positif dari kartu indikator
+                        gameState.score -= 10;
+                        showNotification('Lawan berhasil menggunakan kartu indikator!');
+                        gameState.currentPlayer = 'player';
+                        updateDisplay();
+                    }, 1000);
+                } else {
+                    gameState.currentPlayer = 'player';
+                }
+            } else {
+                // AI mengambil kartu
+                if (gameState.deck.length === 0) {
+                    reshuffleDeck();
+                }
+                
+                const newCard = gameState.deck.pop();
+                gameState.aiCards.push(newCard);
+                showNotification('Lawan mengambil 1 kartu');
+                gameState.currentPlayer = 'player';
+            }
+
+            updateDisplay();
+        }
+
+        function showQuiz() {
+            const quiz = questionBank[Math.floor(Math.random() * questionBank.length)];
+            document.getElementById('quiz-question').textContent = quiz.question;
+            
+            const optionsEl = document.getElementById('quiz-options');
+            optionsEl.innerHTML = '';
+            
+            quiz.options.forEach((option, index) => {
+                const optionEl = document.createElement('div');
+                optionEl.className = 'quiz-option';
+                optionEl.textContent = option;
+                optionEl.onclick = () => selectOption(index);
+                optionEl.dataset.index = index;
+                optionsEl.appendChild(optionEl);
+            });
+            
+            // Simpan quiz saat ini
+            document.getElementById('quiz-modal').currentQuiz = quiz;
+            document.getElementById('quiz-modal').style.display = 'flex';
+        }
+
+        function selectOption(index) {
+            const options = document.querySelectorAll('.quiz-option');
+            options.forEach(opt => opt.classList.remove('selected'));
+            options[index].classList.add('selected');
+            
+            document.getElementById('quiz-modal').selectedAnswer = index;
+        }
+
+        function submitAnswer() {
+            const modal = document.getElementById('quiz-modal');
+            const selectedAnswer = modal.selectedAnswer;
+            const quiz = modal.currentQuiz;
+            
+            if (selectedAnswer === undefined) {
+                showNotification('Pilih jawaban terlebih dahulu!', 'error');
+                return;
+            }
+
+            modal.style.display = 'none';
+            
+            if (selectedAnswer === quiz.correct) {
+                gameState.score += 20;
+                showNotification('Jawaban benar! +20 poin');
+                playSound('correct');
+            } else {
+                gameState.score -= 10;
+                showNotification(`Jawaban salah! ${quiz.explanation}`, 'error');
+                playSound('wrong');
+            }
+
+            // Cek kemenangan setelah quiz
+            if (gameState.playerCards.length === 0) {
+                endGame('player');
+                return;
+            }
+
+            // Lanjutkan ke giliran AI
+            gameState.currentPlayer = 'ai';
+            setTimeout(() => {
+                aiTurn();
+            }, 2000);
+            
+            updateDisplay();
+        }
+
+        function reshuffleDeck() {
+            if (gameState.discardPile.length <= 1) return;
+            
+            // Ambil semua kartu kecuali yang teratas dari discard pile
+            const cardsToShuffle = gameState.discardPile.slice(0, -1);
+            gameState.discardPile = [gameState.discardPile[gameState.discardPile.length - 1]];
+            
+            // Shuffle dan masukkan kembali ke deck
+            for (let i = cardsToShuffle.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cardsToShuffle[i], cardsToShuffle[j]] = [cardsToShuffle[j], cardsToShuffle[i]];
+            }
+            
+            gameState.deck = cardsToShuffle;
+            showNotification('Deck dikocok ulang!');
+        }
+
+        function endGame(winner) {
+            gameState.gameOver = true;
+            const modal = document.getElementById('game-over-modal');
+            const resultEl = document.getElementById('game-result');
+            
+            if (winner === 'player') {
+                resultEl.innerHTML = '<div class="winner-text">🎉 Anda Menang! 🎉</div><p>Selamat! Anda berhasil menghabiskan semua kartu!</p>';
+                gameState.score += 100;
+                playSound('win');
+            } else {
+                resultEl.innerHTML = '<div class="loser-text">😔 Anda Kalah</div><p>Lawan menghabiskan kartu lebih dulu. Coba lagi!</p>';
+                playSound('lose');
+            }
+            
+            // Simpan skor tertinggi
+            const highScore = localStorage.getItem('phBattleHighScore') || 0;
+            if (gameState.score > highScore) {
+                localStorage.setItem('phBattleHighScore', gameState.score);
+                resultEl.innerHTML += '<p><strong>🏆 Skor Tertinggi Baru! 🏆</strong></p>';
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        function newGame() {
+            // Reset game state
+            gameState = {
+                playerCards: [],
+                aiCards: [],
+                discardPile: [],
+                deck: [],
+                currentPlayer: 'player',
+                score: 0,
+                gameOver: false,
+                lastPlayedCard: null
+            };
+            
+            // Tutup modal
+            document.getElementById('game-over-modal').style.display = 'none';
+            
+            // Mulai game baru
+            initGame();
+        }
+
+        function updateDisplay() {
+            // Update kartu pemain
+            const playerArea = document.getElementById('player-area');
+            playerArea.innerHTML = '';
+            gameState.playerCards.forEach(card => {
+                playerArea.appendChild(createCardElement(card, true));
+            });
+
+            // Update kartu lawan (kartu tertutup)
+            const opponentArea = document.getElementById('opponent-area');
+            opponentArea.innerHTML = '';
+            gameState.aiCards.forEach(() => {
+                const cardBack = document.createElement('div');
+                cardBack.className = 'card-back';
+                cardBack.textContent = 'pH';
+                opponentArea.appendChild(cardBack);
+            });
+
+            // Update discard pile
+            const discardPile = document.getElementById('discard-pile');
+            discardPile.innerHTML = '';
+            if (gameState.lastPlayedCard) {
+                discardPile.appendChild(createCardElement(gameState.lastPlayedCard));
+            }
+
+            // Update informasi game
+            document.getElementById('player-cards-count').textContent = gameState.playerCards.length;
+            document.getElementById('ai-cards-count').textContent = gameState.aiCards.length;
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('turn-display').textContent = 
+                gameState.currentPlayer === 'player' ? 'Pemain' : 'Lawan';
+            
+            // Update deck display
+            const deck = document.getElementById('deck');
+            if (gameState.deck.length === 0) {
+                deck.style.opacity = '0.5';
+                deck.style.cursor = 'not-allowed';
+            } else {
+                deck.style.opacity = '1';
+                deck.style.cursor = 'pointer';
+            }
+        }
+
+        function showTooltip(event, card) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.innerHTML = `
+                <strong>${card.name}</strong><br>
+                ${card.description}<br>
+                pH: ${card.ph}
+            `;
+            tooltip.style.opacity = '1';
+            tooltip.style.left = (event.pageX + 10) + 'px';
+            tooltip.style.top = (event.pageY - 10) + 'px';
+        }
+
+        function hideTooltip() {
+            document.getElementById('tooltip').style.opacity = '0';
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function playSound(type) {
+            // Simulasi suara dengan Web Audio API
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                let frequency;
+                
+                switch(type) {
+                    case 'play':
+                        frequency = 440; // A4
+                        break;
+                    case 'draw':
+                        frequency = 330; // E4
+                        break;
+                    case 'correct':
+                        frequency = 523; // C5
+                        break;
+                    case 'wrong':
+                        frequency = 220; // A3
+                        break;
+                    case 'win':
+                        frequency = 659; // E5
+                        break;
+                    case 'lose':
+                        frequency = 196; // G3
+                        break;
+                    case 'start':
+                        frequency = 392; // G4
+                        break;
+                    default:
+                        frequency = 440;
+                }
+                
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.2);
+            } catch (error) {
+                // Fallback jika Web Audio API tidak didukung
+                console.log(`Sound: ${type}`);
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            initGame();
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' && document.getElementById('quiz-modal').style.display === 'flex') {
+                    submitAnswer();
+                }
+                if (event.key === 'Escape') {
+                    document.getElementById('quiz-modal').style.display = 'none';
+                    document.getElementById('game-over-modal').style.display = 'none';
+                }
+                if (event.key === ' ' && gameState.currentPlayer === 'player') {
+                    event.preventDefault();
+                    drawCard();
+                }
+            });
+            
+            // Mobile touch improvements
+            let touchStarted = false;
+            document.addEventListener('touchstart', function() {
+                touchStarted = true;
+            });
+            
+            document.addEventListener('touchend', function() {
+                touchStarted = false;
+            });
+            
+            // Prevent zoom on double tap
+            document.addEventListener('touchend', function(event) {
+                event.preventDefault();
+            }, { passive: false });
+            
+            // Tutorial hint
+            setTimeout(() => {
+                if (gameState.currentPlayer === 'player' && !gameState.gameOver) {
+                    showNotification('💡 Tip: Mainkan kartu dengan jenis sama atau pH berdekatan. Kartu indikator bisa dimain kapan saja!');
+                }
+            }, 3000);
+        });
+
+        // Auto-save progress
+        setInterval(() => {
+            if (!gameState.gameOver) {
+                localStorage.setItem('phBattleGameState', JSON.stringify({
+                    score: gameState.score,
+                    timestamp: Date.now()
+                }));
+            }
+        }, 30000); // Save every 30 seconds
+
+        // Load saved progress on startup
+        function loadProgress() {
+            const saved = localStorage.getItem('phBattleGameState');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    const timeDiff = Date.now() - data.timestamp;
+                    
+                    // Only load if less than 1 hour old
+                    if (timeDiff < 3600000) {
+                        gameState.score = data.score;
+                        showNotification('Progress dimuat dari sesi sebelumnya!');
+                    }
+                } catch (error) {
+                    console.log('Error loading progress:', error);
+                }
+            }
+        }
+
+        // Additional game features
+        function getHint() {
+            if (gameState.currentPlayer !== 'player' || gameState.gameOver) return;
+            
+            const playableCards = gameState.playerCards.filter(card => canPlayCard(card));
+            
+            if (playableCards.length > 0) {
+                const hintCard = playableCards[0];
+                showNotification(`💡 Hint: Coba mainkan ${hintCard.formula} (${cardTypes[hintCard.type].name})`);
+                
+                // Highlight the suggested card
+                const cardElements = document.querySelectorAll('.card');
+                cardElements.forEach(el => {
+                    if (el.innerHTML.includes(hintCard.formula)) {
+                        el.style.boxShadow = '0 0 20px #00ff00';
+                        setTimeout(() => {
+                            el.style.boxShadow = '';
+                        }, 2000);
+                    }
+                });
+            } else {
+                showNotification('💡 Hint: Tidak ada kartu yang bisa dimainkan. Ambil kartu dari deck!');
+            }
+        }
+
+        // Add hint button functionality (can be triggered by clicking on score)
+        document.getElementById('score').onclick = getHint;
+        document.getElementById('score').style.cursor = 'pointer';
+        document.getElementById('score').title = 'Klik untuk hint';
+
+        // Educational content expansion
+        function showCardInfo(card) {
+            const modal = document.createElement('div');
+            modal.className = 'quiz-modal';
+            modal.style.display = 'flex';
+            modal.innerHTML = `
+                <div class="quiz-content">
+                    <h3>${card.name}</h3>
+                    <div class="card ${card.type}" style="width: 120px; height: 180px; margin: 1rem auto; font-size: 14px;">
+                        <div class="formula">${card.formula}</div>
+                        <div class="ph-value">pH: ${card.ph}</div>
+                        <div class="card-type">${cardTypes[card.type].name}</div>
+                    </div>
+                    <p><strong>Deskripsi:</strong> ${card.description}</p>
+                    <p><strong>Kategori:</strong> ${cardTypes[card.type].name}</p>
+                    <p><strong>Rentang pH:</strong> ${card.ph}</p>
+                    <div class="controls">
+                        <button class="btn" onclick="this.closest('.quiz-modal').remove()">Tutup</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Double-click on cards for more info
+        document.addEventListener('dblclick', function(event) {
+            if (event.target.closest('.card') && !event.target.closest('.card-back')) {
+                const cardElement = event.target.closest('.card');
+                const formula = cardElement.querySelector('.formula').textContent;
+                
+                // Find the card data
+                let cardData = null;
+                Object.values(cardTypes).forEach(type => {
+                    type.cards.forEach(card => {
+                        if (card.formula === formula) {
+                            cardData = { ...card, type: type.name.toLowerCase().replace(' ', '-') };
+                        }
+                    });
+                });
+                
+                if (cardData) {
+                    showCardInfo(cardData);
+                }
+            }
+        });
+
+        // Performance optimization for mobile
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                // Register service worker for offline play (simple implementation)
+                const swCode = `
+                    self.addEventListener('fetch', function(event) {
+                        event.respondWith(
+                            caches.match(event.request).then(function(response) {
+                                return response || fetch(event.request);
+                            })
+                        );
+                    });
+                `;
+                
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                
+                navigator.serviceWorker.register(swUrl).catch(function(error) {
+                    console.log('SW registration failed');
+                });
+            });
+        }
+
+        // Initialize game when everything is loaded
+        loadProgress();
+    </script>
+</body>
+</html>
